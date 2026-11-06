@@ -12,7 +12,7 @@ content_desk/
 └── traces/           # per-run logs
 
 
-##Architecture
+## Architecture
 
 User message
     │
