@@ -1,0 +1,3 @@
+sqlite3==3.35.0
+pathlib==1.0.9
+typing-extensions==4.5.0
