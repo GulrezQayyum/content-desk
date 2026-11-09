@@ -5,7 +5,7 @@ from tools._common import (
     InvalidInputError,
     NotFoundError,
     RuleViolatedError,
-    RuleVoilatedError,
+    RuleViolatedError,
     parse_iso_date,
     validate_platform,
     validate_status,

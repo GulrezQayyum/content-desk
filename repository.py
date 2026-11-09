@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any, List
 
-ALLOWED_PLATFORMS = ["linkedin", "Substack", "Medium"]
+ALLOWED_PLATFORMS = ["LinkedIn", "Substack", "Medium"]
 ALLOWED_STATUSES = ["draft", "published", "scheduled"]
 
 DEFAULT_DB_PATH = Path("content-desk.db")

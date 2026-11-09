@@ -2,7 +2,7 @@ from typing import Any
 from datetime import date
 from repository import PostRepository
 from tools._common import (
-    InvalidInputError,
+    NotFoundError,
     RuleViolatedError,
     parse_iso_date,
     validate_post_id,
@@ -10,7 +10,7 @@ from tools._common import (
     default_repo
 )
 
-def validate (
+def validate(
     post_id: int,
     new_date: str,
     repo: PostRepository = default_repo,
@@ -23,7 +23,11 @@ def validate (
         )
     post = repo.get_post(post_id)
     if not post:
-        raise InvalidInputError(f"Post with ID {post_id} does not exist.")
+        raise NotFoundError(f"Post with ID {post_id} does not exist.")
+    if post["status"] == "published":
+        raise RuleViolatedError(
+            f"Post with ID {post_id} is already published and cannot be rescheduled."
+        )
     check_slot_available(repo, platform=post["platform"], scheduled_date=new_date, exclude_post_id=post_id)
 
 def execute (
