@@ -2,7 +2,9 @@ from tools._common import (
     NotFoundError,
     RuleViolatedError,
     ToolError,
-    InvalidInputError
+    InvalidInputError,
+    get_today,
+    set_today
 )
 from tools.list_posts import list_posts
 from tools.add_posts import add_post
@@ -18,4 +20,6 @@ __all__ = [
     "list_posts",
     "reschedule_post",
     "mark_published",
+    "get_today",
+    "set_today"
 ]

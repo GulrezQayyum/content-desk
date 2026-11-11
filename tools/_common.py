@@ -20,6 +20,23 @@ class NotFoundError(ToolError):
 
 default_repo = PostRepository()
 
+_override_today: date | None = None
+
+def set_today(target_date: str | date | None) -> None:
+    """
+    Override today's date for deterministic eval runs or agent contexts.
+    Pass None to reset back to the real system clock.
+    """
+    global _override_today
+    if isinstance(target_date, str):
+        _override_today = date.fromisoformat(target_date)
+    else:
+        _override_today = target_date
+
+def get_today() -> date:
+    """Return the current injected date, or fall back to system clock."""
+    return _override_today if _override_today is not None else date.today()
+
 
 def parse_iso_date(value: str) -> date:
     if not isinstance(value, str):

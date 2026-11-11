@@ -7,7 +7,8 @@ from tools._common import (
     parse_iso_date,
     validate_post_id,
     check_slot_available,
-    default_repo
+    default_repo,
+    get_today
 )
 
 def validate(
@@ -17,7 +18,8 @@ def validate(
 ) -> None:
     validate_post_id(post_id)
     parsed_date = parse_iso_date(new_date)
-    if parsed_date < date.today():
+    today = get_today()
+    if parsed_date < today():
         raise RuleViolatedError(
             f"Cannot reschedule post to a past date ({new_date} < {date.today().isoformat()})."
         )
