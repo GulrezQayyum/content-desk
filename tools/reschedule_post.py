@@ -11,6 +11,22 @@ from tools._common import (
     get_today
 )
 
+SCHEMA: dict[str, Any] = {
+    "type": "function",
+    "function": {
+        "name": "reschedule_post",
+        "description": "Move an unpublished post to a new YYYY-MM-DD date.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "post_id": {"type": "integer", "description": "Numeric ID of the post to move."},
+                "new_date": {"type": "string", "description": "New target date in YYYY-MM-DD format."},
+            },
+            "required": ["post_id", "new_date"],
+        },
+    },
+}
+
 def validate(
     post_id: int,
     new_date: str,

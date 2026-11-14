@@ -7,6 +7,22 @@ from tools._common import (
     validate_post_id,
 )
 
+SCHEMA: dict[str, Any] = {
+    "type": "function",
+    "function": {
+        "name": "mark_published",
+        "description": "Mark an existing post as published.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "post_id": {"type": "integer", "description": "Numeric ID of the post to publish."},
+            },
+            "required": ["post_id"],
+        },
+    },
+}
+
+
 def validate (
     post_id: int,
     repo: PostRepository = default_repo,

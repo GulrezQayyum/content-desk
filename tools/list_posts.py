@@ -1,11 +1,28 @@
 from typing import Any
-from repository import PostRepository
+from repository import ALLOWED_PLATFORMS, ALLOWED_STATUSES, PostRepository
 from tools._common import (
     default_repo,
     validate_platform,
     validate_status,
     parse_iso_date
 )
+
+SCHEMA: dict[str, Any] = {
+    "type": "function",
+    "function": {
+        "name": "list_posts",
+        "description": "Fetch existing posts, optionally filtered by platform, status, or YYYY-MM-DD date.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "platform": {"type": "string", "enum": list(ALLOWED_PLATFORMS)},
+                "status": {"type": "string", "enum": list(ALLOWED_STATUSES)},
+                "scheduled_date": {"type": "string", "description": "Filter by YYYY-MM-DD date."},
+            },
+            "required": [],
+        },
+    },
+}
 
 def validate (
     platform: str | None = None,

@@ -1,5 +1,5 @@
 from typing import Any
-from repository import PostRepository
+from repository import ALLOWED_PLATFORMS, ALLOWED_STATUSES, PostRepository
 from tools._common import (
     InvalidInputError,
     RuleViolatedError,
@@ -11,8 +11,27 @@ from tools._common import (
     validate_status,
 )
 
-# SCHEMA = {...}  # Will live here when LLM loop is added
-
+SCHEMA: dict[str, Any] = {
+    "type": "function",
+    "function": {
+        "name": "add_post",
+        "description": "Schedule or draft a new post. Only one post per platform per day is allowed.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Headline or working title of the post."},
+                "platform": {"type": "string", "enum": list(ALLOWED_PLATFORMS)},
+                "scheduled_date": {"type": "string", "description": "Target date in YYYY-MM-DD format."},
+                "status": {
+                    "type": "string",
+                    "enum": list(ALLOWED_STATUSES),
+                    "default": "scheduled",
+                },
+            },
+            "required": ["title", "platform", "scheduled_date"],
+        },
+    },
+}
 
 def validate(
     title: str,
