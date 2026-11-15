@@ -1,1 +1,3 @@
 typing-extensions
+groq
+python-dotenv
