@@ -1,34 +1,52 @@
-# Content Desk
+# content-desk
 
-A deterministic-first content scheduling agent built in layers: storage and validated tools first, followed by structured error envelopes, fault injection, and an LLM reliability loop.
+A deterministic-first content scheduling agent built in Python, SQLite, and Groq.
 
-## Current Milestone: Deterministic Core (No LLM)
+## Architecture
 
-- **SQLite Storage (`repository.py`)**: Plain CRUD operations over a `posts` table (`id`, `title`, `platform`, `scheduled_date`, `status`).
-- **Validated Tools (`tools/`)**: Four domain tools (`add_post`, `list_posts`, `reschedule_post`, `mark_published`) separated into `validate()` and `execute()` functions.
-- **Typed Exceptions (`tools/_common.py`)**: Failures raise `InvalidInputError`, `RuleViolatedError`, or `NotFoundError` (all inheriting from `ToolError`) for downstream retry/feedback routing.
+1. **Storage (`repository.py`)**
+   - Single source of truth for allowed platforms (`LinkedIn`, `Substack`, `Medium`) and statuses (`draft`, `scheduled`, `published`).
+   - Enforces database-level `CHECK` constraints in SQLite.
 
-## Allowed Values
+2. **Deterministic Tools (`tools/`)**
+   - Each tool (`add_post`, `list_posts`, `reschedule_post`, `mark_published`) owns its JSON `SCHEMA` and separates pre-flight checks (`validate()`) from database writes (`execute()`).
+   - Raises typed domain exceptions (`InvalidInputError`, `NotFoundError`, `RuleViolatedError`).
+   - Uses an injectable `get_today()` / `set_today()` clock so relative date prompts stay deterministic during testing.
 
-- **Platforms**: `Substack`, `LinkedIn`, `Medium`
-- **Statuses**: `draft`, `scheduled`, `published`
-- **Dates**: ISO format (`YYYY-MM-DD`), cannot be in the past when scheduling or rescheduling.
+3. **Standardized Envelopes (`envelope.py`)**
+   - Wraps every tool outcome into one JSON shape (`status`, `result`, `error`) so the LLM never receives raw Python exceptions.
+   - Maps `InvalidInputError` to `retryable: true` and domain rejections (`RuleViolatedError`, `NotFoundError`) to `retryable: false`, while logging unexpected crashes cleanly.
+
+4. **Agent Loop (`agent.py` — Naive Mode Baseline)**
+   - Injects today's ISO date and weekday into the system prompt and enforces a hard cap of `6` turns at low temperature (`0.1`).
+   - Executes one attempt per tool call with zero automatic retries, establishing a clean baseline before adding `reliability.py`.
 
 ## Project Structure
 
 ```text
-content_desk/
-├── repository.py         # Single source of truth constants + SQLite CRUD
+content-desk/
+├── agent.py            # Groq tool-calling loop (Naive Mode baseline)
+├── envelope.py         # Standardized result/error wrapper & logging
+├── repository.py       # SQLite persistence & enum constraints
+├── test_manual.py      # 16 deterministic happy/failure path checks
 ├── tools/
-│   ├── __init__.py       # Public exports for tools and typed exceptions
-│   ├── _common.py        # Typed exceptions and shared validation helpers
-│   ├── add_post.py       # Create a scheduled/draft post (no double-booking)
-│   ├── list_posts.py     # Filter posts by platform, status, or date
-│   ├── reschedule_post.py# Move un-published posts to a valid future date
-│   └── mark_published.py # Transition a post to published
-├── test_manual.py        # End-to-end verification of happy & failure paths
-├── envelope.py           # [Planned] Standardized tool result/error shapes
-├── reliability.py        # [Planned] Validate -> execute -> classify -> retry
-├── faults.py             # [Planned] Fault injection for reliability testing
-├── agent.py              # [Planned] LLM loop (naive vs. reliable modes)
-└── evals/                # [Planned] Eval cases, runner, and reporting
+│   ├── _common.py      # Typed exceptions, validators & injectable clock
+│   ├── add_posts.py
+│   ├── list_posts.py
+│   ├── mark_published.py
+│   └── reschedule_post.py
+└── traces/             # Execution trace storage
+
+## Quickstart
+
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Configure Groq API key
+echo 'GROQ_API_KEY="your-api-key"' > .env
+
+# 3. Run deterministic tool regression checks
+python3 test_manual.py
+
+# 4. Run the agent in Naive Mode
+python3 agent.py
