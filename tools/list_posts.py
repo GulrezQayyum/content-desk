@@ -4,7 +4,7 @@ from tools._common import (
     default_repo,
     validate_platform,
     validate_status,
-    parse_iso_date
+    parse_iso_date,
 )
 
 SCHEMA: dict[str, Any] = {
@@ -15,16 +15,26 @@ SCHEMA: dict[str, Any] = {
         "parameters": {
             "type": "object",
             "properties": {
-                "platform": {"type": "string", "enum": list(ALLOWED_PLATFORMS)},
-                "status": {"type": "string", "enum": list(ALLOWED_STATUSES)},
-                "scheduled_date": {"type": "string", "description": "Filter by YYYY-MM-DD date."},
+                "platform": {
+                    "type": ["string", "null"],
+                    "enum": [*ALLOWED_PLATFORMS, None],
+                },
+                "status": {
+                    "type": ["string", "null"],
+                    "enum": [*ALLOWED_STATUSES, None],
+                },
+                "scheduled_date": {
+                    "type": ["string", "null"],
+                    "description": "Filter by YYYY-MM-DD date.",
+                },
             },
             "required": [],
         },
     },
 }
 
-def validate (
+
+def validate(
     platform: str | None = None,
     status: str | None = None,
     scheduled_date: str | None = None,
@@ -36,25 +46,25 @@ def validate (
     if scheduled_date is not None:
         parse_iso_date(scheduled_date)
 
+
 def execute(
-        platform: str | None = None,
-        status: str | None = None,
-        scheduled_date: str | None = None,
-        repo: PostRepository = default_repo,
+    platform: str | None = None,
+    status: str | None = None,
+    scheduled_date: str | None = None,
+    repo: PostRepository = default_repo,
 ) -> list[dict[str, Any]]:
     return repo.fetch_posts(
-        platform = platform,
-        status = status,
-        scheduled_date = scheduled_date
-)
+        platform=platform, status=status, scheduled_date=scheduled_date
+    )
+
 
 def list_posts(
-        
-        platform: str | None = None,
-        status: str | None = None,
-        scheduled_date: str | None = None,
-        repo: PostRepository = default_repo,
+    platform: str | None = None,
+    status: str | None = None,
+    scheduled_date: str | None = None,
+    repo: PostRepository = default_repo,
 ) -> list[dict[str, Any]]:
     validate(platform=platform, status=status, scheduled_date=scheduled_date)
-    return execute(platform=platform, status=status, scheduled_date=scheduled_date, repo=repo
-)
+    return execute(
+        platform=platform, status=status, scheduled_date=scheduled_date, repo=repo
+    )

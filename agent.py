@@ -15,6 +15,7 @@ import logging
 from typing import Any
 from dotenv import load_dotenv
 from groq import Groq
+from datetime import timedelta
 from envelope import error, from_exception, ok
 from repository import PostRepository
 from tools import TOOL_REGISTRY, TOOL_SCHEMAS, get_today
@@ -31,11 +32,19 @@ MAX_TURNS = 6
 def build_sys_prompt() -> str:
     today = get_today()
     weekday = today.strftime("%A")
+
+    calendar_lines = [
+        f"- {(today + timedelta(days=i)).isoformat()} ({(today + timedelta(days=i)).strftime('%A')})"
+        for i in range(14)
+    ]
+    calendar_block = "\n".join(calendar_lines)
+
     return (
-        "You are Content Desk, a content scheduling assistant. "
-        f"Today's date is {today.isoformat()} ({weekday}). "
-        "Use the provided tools to manage posts across Substack, LinkedIn, and Medium. "
-        "Always resolve relative dates (like 'tomorrow' or 'next Friday') using today's date."
+        "You are Content Desk, a content scheduling assistant.\n"
+        f"Today's date is {today.isoformat()} ({weekday}).\n"
+        "Use the provided tools to manage posts across Substack, LinkedIn, and Medium.\n"
+        "Resolve relative dates strictly using this upcoming calendar:\n"
+        f"{calendar_block}"
     )
 
 
