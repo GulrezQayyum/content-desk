@@ -2,13 +2,13 @@ import time
 from pathlib import Path
 from agent import run_agent
 from repository import PostRepository
-from tools import add_post, mark_published, set_today
+from tools import add_post, list_posts, mark_published, set_today
 
 set_today("2026-11-18")
 
 PROMPTS = [
     "Move the carousel post to Monday.",
-    "Reschedule the POdcast announcement to next Tuesday",
+    "Reschedule the Podcast announcement to next Tuesday",
     "Schedule a LinkedIn post titled 'Throwback' for 2026-11-10.",  
     "Schedule a Substack post titled 'Collision' for 2026-11-20.",
     "Reschedule post 1 to 2026-11-25.",
@@ -35,7 +35,7 @@ for i, prompt in enumerate(PROMPTS, 1):
     print(f"\n[{i}/9] PROMPT: {prompt}")
     print(f"STATUS: {out['status']} | TURNS: {out['turns_used']}")
     print(f"ANSWER: {out['final_answer'].strip()}")
-    print("DB AFTER:", [(p["id"], p["title"], p["scheduled_date"], p["status"]) for p in repo.list_posts()])
+    print("DB AFTER:", [(p["id"], p["title"], p["scheduled_date"], p["status"]) for p in list_posts(repo=repo)])
     time.sleep(2)
 
 Path("probe.db").unlink(missing_ok=True)

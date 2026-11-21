@@ -8,7 +8,7 @@ from tools._common import (
     validate_post_id,
     check_slot_available,
     default_repo,
-    get_today
+    get_today,
 )
 
 SCHEMA: dict[str, Any] = {
@@ -19,13 +19,20 @@ SCHEMA: dict[str, Any] = {
         "parameters": {
             "type": "object",
             "properties": {
-                "post_id": {"type": "integer", "description": "Numeric ID of the post to move."},
-                "new_date": {"type": "string", "description": "New target date in YYYY-MM-DD format."},
+                "post_id": {
+                    "type": "integer",
+                    "description": "Numeric ID of the post to move.",
+                },
+                "new_date": {
+                    "type": "string",
+                    "description": "New target date in YYYY-MM-DD format.",
+                },
             },
             "required": ["post_id", "new_date"],
         },
     },
 }
+
 
 def validate(
     post_id: int,
@@ -35,9 +42,9 @@ def validate(
     validate_post_id(post_id)
     parsed_date = parse_iso_date(new_date)
     today = get_today()
-    if parsed_date < today():
+    if parsed_date < today:
         raise RuleViolatedError(
-            f"Cannot reschedule post to a past date ({new_date} < {date.today().isoformat()})."
+            f"Cannot reschedule post to a past date ({new_date} < {today.isoformat()})."
         )
     post = repo.get_post(post_id)
     if not post:
@@ -46,9 +53,15 @@ def validate(
         raise RuleViolatedError(
             f"Post with ID {post_id} is already published and cannot be rescheduled."
         )
-    check_slot_available(repo, platform=post["platform"], scheduled_date=new_date, exclude_post_id=post_id)
+    check_slot_available(
+        repo,
+        platform=post["platform"],
+        scheduled_date=new_date,
+        exclude_post_id=post_id,
+    )
 
-def execute (
+
+def execute(
     post_id: int,
     new_date: str,
     repo: PostRepository = default_repo,
@@ -57,11 +70,11 @@ def execute (
     assert updated is not None
     return updated
 
-def reschedule_post (
+
+def reschedule_post(
     post_id: int,
     new_date: str,
     repo: PostRepository = default_repo,
 ) -> dict[str, Any]:
     validate(post_id=post_id, new_date=new_date, repo=repo)
-    return execute(post_id=post_id, new_date=new_date, repo=repo
-)
+    return execute(post_id=post_id, new_date=new_date, repo=repo)
